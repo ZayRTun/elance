@@ -1,0 +1,16 @@
+
+// Fonts
+@import url('https://fonts.googleapis.com/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import '~bulma/bulma.sass';
+
+//over writing bulma max-width: 100%;
+//cause its causing problem to image crop component
+img {
+    max-width: none;
+}
+
