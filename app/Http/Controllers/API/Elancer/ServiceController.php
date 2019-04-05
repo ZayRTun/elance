@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API\Elancer;
 
 use App\Service;
+use App\SubService;
+use App\SubServiceSkill;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -45,9 +47,28 @@ class ServiceController extends Controller
      * @param  \App\Service  $service
      * @return \Illuminate\Http\Response
      */
-    public function show(Service $service)
+    public function services(Service $service)
     {
         return $service->subServices->all();
+    }
+
+    public function skills(SubService $subService)
+    {
+        return $subService->skills->all();
+    }
+
+    public function skillSuggestions(Request $request, $id)
+    {
+        $request->validate([
+            'userInput' => ['string', 'min:1']
+        ]);
+
+        // if ($request->has('userInput')) {
+        $userInput = $request->userInput;
+        return SubServiceSkill::where('sub_service_id', '<>', "$id")->where('skills', 'LIKE', "%$userInput%")->pluck('skills');
+
+        // return response()->json($result);
+        // return $results;
     }
 
     /**

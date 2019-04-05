@@ -19,7 +19,9 @@ class ElancerController extends Controller
      */
     public function index()
     {
-        return view('elancer.home');
+        $elancerProfile = auth('elancer')->user()->profile()->first();
+
+        return view('elancer.home', compact('elancerProfile'));
     }
 
     /**

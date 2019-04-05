@@ -14,4 +14,9 @@ class Service extends Model
     {
         return $this->hasMany(SubService::class);
     }
+
+    public function subServiceSkills()
+    {
+        return $this->hasManyThrough(SubServiceSkill::class, SubService::class);
+    }
 }

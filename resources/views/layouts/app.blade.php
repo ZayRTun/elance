@@ -21,113 +21,67 @@
 </head>
 <body>
     <div id="app">
-        <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-            <div class="navbar-brand">
-                <a class="navbar-item" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+        <nav class="navbar navbar-expand-md navbar-light shadow-sm">
+            <div class="container">
+                <a class="navbar-brand font-weight-bold" href="{{ url('/') }}">
+                    {{-- {{ config('app.name', 'Laravel') }} --}}
+                    <span class="text-primary font-italic h3">e</span><span class="h3 text-muted">Lance</span>
                 </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-                <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                </a>
-            </div>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <!-- Left Side Of Navbar -->
+                    <ul class="navbar-nav mr-auto">
+                        <a class="nav-link" href="{{route('jobs')}}">JOBS</a>
+                        <a class="nav-link" href="{{route('jobs')}}">FREELANCERS</a>
+                    </ul>
 
-            <div id="navbarBasicExample" class="navbar-menu">
-                <div class="navbar-start">
-                    <a class="navbar-item">
-                        Home
-                    </a>
+                    <!-- Right Side Of Navbar -->
+                    <ul class="navbar-nav ml-auto">
+                        <!-- Authentication Links -->
+                        @guest
+                            <li class="nav-item dropdown">
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                    {{ __('Login') }}
+                                </a>
 
-                    <a class="navbar-item">
-                        Documentation
-                    </a>
-                </div>
-
-                <div class="navbar-end">
-                    <div class="navbar-item">
-                            @guest
-                                <div class="navbar-item has-dropdown is-hoverable">
-                                    <a class="navbar-link">
-                                        {{ __("Login") }}
-                                    </a>
-
-                                    <div class="navbar-dropdown">
-                                        <a class="navbar-item" href="{{ route('login') }}">
-                                            {{ __('User Login') }}
-                                        </a>
-
-                                        <a class="navbar-item" href="{{ route('elancer.login') }}">
-                                            {{ __('Elancer Login') }}
-                                        </a>
-                                    </div>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="{{ route('login') }}">{{ __('Client Login') }}</a>
+                                    <a class="dropdown-item" href="{{ route('elancer.login') }}">{{ __('eLancer Login') }}</a>
                                 </div>
+                            </li>
+                            @if (Route::has('register'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('signup') }}">{{ __('Sign Up') }}</a>
+                                </li>
+                            @endif
+                        @else
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault();
+                                     document.getElementById('logout-form').submit();">
+                                         <i class="fas fa-sign-out-alt"></i> {{ Auth::user()->name }}
+                                </a>
 
-                                @if (Route::has('register'))
-                                    <a class="button is-primary" href="{{ route('signup') }}">
-                                        {{ __('Sign Up') }}
-                                    </a>
-                                @endif
-                            @else
-                                <div class="navbar-item has-dropdown is-hoverable">
-                                    <a class="navbar-link button is-light">
-                                        {{ Auth::user()->name }}
-                                    </a>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                    @csrf
+                                </form>
+                            </li>
+                        @endguest
 
-                                    <div class="navbar-dropdown">
-                                        <a class="navbar-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                            {{ __('Logout') }}
-                                        </a>
+                        @if (Auth::check())
 
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                            @csrf
-                                        </form>
-                                    </div>
-                                </div>
-                            @endguest
-                    </div>
+                        @else
+                            <a class="btn btn-primary rounded-0" href="{{ route('jobs.create') }}" role="button">Post a Job</a>
+                        @endif
+                    </ul>
                 </div>
             </div>
         </nav>
 
-        <main class="py-4">
-            <div class="section">
-                <div class="container">
+        @yield('content')
 
-                    @yield('content')
-
-                </div>
-            </div>
-        </main>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-          // Get all "navbar-burger" elements
-          const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
-
-          // Check if there are any navbar burgers
-          if ($navbarBurgers.length > 0) {
-
-            // Add a click event on each of them
-            $navbarBurgers.forEach( el => {
-              el.addEventListener('click', () => {
-
-                // Get the target from the "data-target" attribute
-                const target = el.dataset.target;
-                const $target = document.getElementById(target);
-
-                // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-                el.classList.toggle('is-active');
-                $target.classList.toggle('is-active');
-
-              });
-            });
-          }
-
-        });
-    </script>
 </body>
 </html>

@@ -29,6 +29,7 @@ class CreateElancerProfilesTable extends Migration
             $table->string('from');
             $table->string('to');
             $table->text('address');
+            $table->boolean('completed')->default(0);
             $table->timestamps();
         });
     }

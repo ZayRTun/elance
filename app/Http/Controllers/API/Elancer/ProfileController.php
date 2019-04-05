@@ -22,7 +22,7 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        //
+        return auth('elancer-api')->user()->profile()->get();
     }
 
     /**

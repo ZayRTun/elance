@@ -1,77 +1,70 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="section">
-        <div class="container">
-            <div class="columns">
-                <div class="column is-12-mobile is-6-tablet is-offset-3-tablet">
-                    <div class="card">
-                        <div class="card-header">
-                            <h1 class="card-header-title">
-                                {{ __('Login') }}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <div class="card rounded-0">
+
+
+                    <div class="card-body">
+                        <div class="text-dark text-center">
+                            <h1>
+                                {{ __('Client Login') }}
                             </h1>
                         </div>
 
-                        <div class="card-content">
-                            <form method="POST" action="{{ route('login') }}">
-                                @csrf
+                        <form class="mt-4" method="POST" action="{{ route('login') }}">
+                            @csrf
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="email" class="form-control-label sr-only">{{ __('E-Mail Address') }}</label>
 
-                                <div class="field">
-                                    <label for="email" class="label">{{ __('E-Mail Address') }}</label>
-
-                                    <div class="control">
-                                        <input id="email" type="email" class="input{{ $errors->has('email') ? ' is-danger' : '' }}" name="email" value="{{ old('email') }}" required autofocus>
+                                        <input id="email" type="email" class="form-control rounded-0 {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required autofocus placeholder="Email">
 
                                         @if ($errors->has('email'))
-                                            <p class="help is-danger">{{ $errors->first('email') }}</p>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <label for="password" class="label">{{ __('Password') }}</label>
-
-                                    <div class="control">
-                                        <input id="password" type="password" class="input{{ $errors->has('password') ? ' is-danger' : '' }}" name="password" required>
-
-                                        @if ($errors->has('password'))
-                                            <span class="invalid-feedback" role="alert">
-                                                <p class="help is-danger">{{ $errors->first('password') }}</p>
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <div class="control">
-                                        <label class="form-check-label" for="remember">
-                                            <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                                            {{ __('Remember Me') }}
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="field is-grouped">
-                                    <div class="control">
-                                        <button type="submit" class="button is-link is-outlined">
-                                            {{ __('Login') }}
-                                        </button>
-                                    </div>
-
-                                        @if (Route::has('password.request'))
-                                            <div class="control">
-                                                <a class="button is-primary is-outlined" href="{{ route('password.request') }}">
-                                                    {{ __('Forgot Your Password?') }}
-                                                </a>
-                                            </div>
-
+                                            <p class="help is-invalid">{{ $errors->first('email') }}</p>
                                         @endif
                                 </div>
-                            </form>
-                        </div>
+
+                                <div class="form-group col-md-6">
+                                    <label for="password" class="form-control-label sr-only">{{ __('Password') }}</label>
+
+                                    <input id="password" type="password" class="form-control rounded-0 {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" required placeholder="Password">
+
+                                    @if ($errors->has('password'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <p class="help is-invalid">{{ $errors->first('password') }}</p>
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <div class="form-check col-md-12 mb-2">
+                                    <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="remember">{{ __('Remember Me') }}</label>
+                                </div>
+
+                                <div class="form-group col-md-12 mb-0">
+                                    <button type="submit" class="btn btn-primary rounded-0">
+                                        {{ __('Login') }}
+                                    </button>
+
+                                    @if (Route::has('password.request'))
+                                        <a class="btn btn-link" href="{{ route('password.request') }}">
+                                            {{ __('Forgot Your Password?') }}
+                                        </a>
+                                    @endif
+                                </div>
+                            </div> <!-- row -->
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+
+
+
+

@@ -23,3 +23,9 @@ Route::prefix('/elancer')->group(function () {
 
     Route::get('/', 'ElancerController@index')->name('elancer.home');
 });
+
+Route::prefix('/jobs')->group(function () {
+    Route::get('/create', 'JobController@create')->name('jobs.create');
+    Route::get('/show', 'JobController@show')->name('jobs.show');
+    Route::get('/', 'JobController@index')->name('jobs');
+});
