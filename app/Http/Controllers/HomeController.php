@@ -26,6 +26,9 @@ class HomeController extends Controller
     {
         $client = Auth::user();
 
-        return view('client.dashboard', compact('client'));
+        $drafts = $client->jobDrafts()->where('job_post_completed', 0)->get();
+        $jobs = $client->jobs()->get();
+
+        return view('client.dashboard', compact('client', 'drafts', 'jobs'));
     }
 }

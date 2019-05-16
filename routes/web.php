@@ -29,3 +29,8 @@ Route::prefix('/jobs')->group(function () {
     Route::get('/show', 'JobController@show')->name('jobs.show');
     Route::get('/', 'JobController@index')->name('jobs');
 });
+
+Route::prefix('/drafts')->group(function () {
+    Route::get('/{id}/edit', 'DraftController@show')->name('draft.edit');
+    Route::delete('/delete/{draft}', 'DraftController@destroy')->name('draft.delete');
+});

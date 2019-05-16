@@ -24,4 +24,17 @@ Route::prefix('/jobs')->group(function () {
     Route::post('/s3', 'API\Job\JobController@create3');
     Route::post('/s4', 'API\Job\JobController@create4');
     Route::post('/s5', 'API\Job\JobController@create5');
+    Route::post('/{jobdraft}', 'API\Job\JobController@store');
+});
+
+Route::prefix('/updatejob')->group(function () {
+    Route::post('/up1', 'API\Job\JobController@update1');
+    Route::post('/up2', 'API\Job\JobController@update2');
+    Route::post('/up3', 'API\Job\JobController@update3');
+    Route::post('/up4', 'API\Job\JobController@update4');
+    Route::post('/up5', 'API\Job\JobController@update5');
+});
+
+Route::prefix('/draft')->group(function () {
+    Route::get('/{jobDraft}', 'API\Job\DraftController@show');
 });

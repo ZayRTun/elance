@@ -80,7 +80,7 @@
 
             <div class="col col-sm-12 col-lg-9">
 
-                <form method="POST" @submit.prevent="onSubmit" @keydown="form.onKeydown($event)" @change="validate()" @keyup="validate()">
+                <form method="POST" @submit.prevent="submit" @keydown="form.onKeydown($event)" @change="validate()" @keyup="validate()">
 
                     <!-- step 1 -->
                     <div v-if="step === 0" class="card border-0">
@@ -135,7 +135,17 @@
                             </div>
 
                             <div class="card-footer">
-                                <div class="row">
+                                <div v-if="updateMode" class="row">
+                                    <div class="col col-3">
+                                        <button type="button" class="btn btn-outline-secondary btn-light btn-block border-0 shadow-sm rounded-0" @click="cancelUpdate">Cancel</button>
+                                    </div>
+
+                                    <div class="col col-3">
+                                        <button type="button" class="btn btn-outline-primary btn-light btn-block border-0 shadow-sm rounded-0" @click="updateJob(1)" :disabled="!this.pages[this.step].completed">Update</button>
+                                    </div>
+                                </div>
+
+                                <div v-else class="row">
                                     <div class="col col-3">
                                         <button type="button" class="btn btn-outline-secondary btn-light btn-block border-0 shadow-sm rounded-0">Exit</button>
                                     </div>
@@ -172,28 +182,7 @@
                                 </ul>
                             </div>
 
-                            <div class="card-body">
-                                <p class="card-subtitle font-weight-bold mb-1">Additional project files</p>
-
-                                <ul class="list-group list-unstyled mb-1">
-                                    <li v-for="file in files" class="list-item" :key="file.name">
-                                        <i class="fas fa-paperclip"></i>
-                                        {{file.name + ' (' + file.getSize() + ' KB' + ')' }}
-                                        <span class="btn-link p-2 deleteFile" @click="deleteFile(files.indexOf(file))">
-                                            <i class="fas fa-trash"></i>
-                                        </span>
-
-                                        <span v-if="file.display">{{file.progress}}%</span>
-                                    </li>
-                                </ul>
-                                <div class="form-group">
-                                    <input type="file" class="custom-file-input" id="customFile" style="display:none;" ref="file" @change="readAndStore($event.target.files[0])">
-                                    <div :class="[fileUploadError ? invalidDrop : validDrop]" class="card p-4 rounded-0 d-flex justify-content-center align-items-center" @dragover.prevent @drop.prevent="drop">
-                                            <p class="m-0">drag or <span class="text-primary btn-link customDropLink" @click="$refs.file.click(drop)">upload</span> project images or files</p>
-                                    </div>
-                                    <p :class="[fileUploadError ? textDanger : textMuted]" class="card-subtitle mb-1 mt-1">You may attach up to 3 jpg, png or pdf under 100 MB each</p>
-                                </div>
-                            </div>
+                            <dropFile></dropFile>
 
                             <div class="card-footer">
                                 <div class="row">
@@ -405,6 +394,7 @@
 
                     <!-- Step 6 -->
                     <div v-if="step === 5" class="card border-0">
+                        <!-- Title -->
                         <div class="card rounded-0 shadow-sm">
                             <div class="card-header bg-light">
                                 <p class="h3 mb-0">Review and post</p>
@@ -415,7 +405,7 @@
                                     <div class="col-12 d-flex justify-content-between mb-3">
                                         <div class="card-title h3">Title</div>
 
-                                        <button type="button" class="btn rounded-circle shadow-sm text-primary job-edit-btn">
+                                        <button type="button" class="btn rounded-circle shadow-sm text-primary job-edit-btn" @click="editJob(1)">
                                             <i class="fas fa-pen"></i>
                                         </button>
                                     </div>
@@ -431,15 +421,136 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="card rounded-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-between mb-3">
+                                        <div class="card-title h3">Description</div>
+
+                                        <button type="button" class="btn rounded-circle shadow-sm text-primary job-edit-btn">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card-title font-weight-bold">Job description</div>
+                                        <p>{{form.description}}</p>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card-title font-weight-bold">Project files</div>
+
+                                        <ul class="list-group list-unstyled mb-1">
+                                            <li v-for="file in files" class="list-item" :key="file.name">
+                                                <i class="fas fa-paperclip"></i>
+                                                {{file.name + ' (' + file.getSize() + ' KB' + ')' }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Details -->
+                        <div class="card rounded-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-between mb-3">
+                                        <div class="card-title h3">Details</div>
+
+                                        <button type="button" class="btn rounded-circle shadow-sm text-primary job-edit-btn">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card-title font-weight-bold">Type of project</div>
+                                        <p>{{form.job_type}}</p>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card-title font-weight-bold">Screening question</div>
+
+                                        <div class="card-text mb-2">
+                                            <div v-for="q in questions">
+                                                <div v-if="q.question.length > 0" class="row px-2 d-flex align-items-center">
+                                                    <div class="col-10" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                        <span class="text-primary">{{`Q-${q.id}: `}}</span> {{q.question}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experties -->
+                        <div class="card rounded-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-between mb-3">
+                                        <div class="card-title h3">Skills and experties</div>
+
+                                        <button type="button" class="btn rounded-circle shadow-sm text-primary job-edit-btn">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card-title font-weight-bold">Selected skills</div>
+                                        <p>{{form.skills}}</p>
+                                    </div>
+
+                                    <div v-if='form.client_added_skills.length > 0' class="col-12">
+                                        <div class="card-title font-weight-bold">Additional skills</div>
+
+                                        <div class="card-text mb-2">
+                                            {{form.client_added_skills}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Budget -->
+                        <div class="card rounded-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-between mb-3">
+                                        <div class="card-title h3">Budget</div>
+
+                                        <button type="button" class="btn rounded-circle shadow-sm text-primary job-edit-btn">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card-title font-weight-bold">Level of experience</div>
+                                        <p>{{form.experience_level}}</p>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card-title font-weight-bold">Expected duration</div>
+
+                                        <div class="card-text mb-2">
+                                            {{form.expected_duration}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="card-footer">
                                 <div class="row">
                                     <div class="col col-3">
-                                        <button type="button" class="btn btn-outline-primary btn-light btn-block border-0 shadow-sm rounded-0" @click="prev">Prev</button>
+                                        <button type="button" class="btn btn-outline-primary btn-light btn-block border-0 shadow-sm rounded-0" @click="prev">Save & exit</button>
                                     </div>
 
                                     <div class="col col-md-3">
-                                        <button type="button" class="btn btn-outline-primary btn-light btn-block border-0 shadow-sm rounded-0" @click="next" :disabled="!this.pages[this.step].completed">Next</button>
+                                        <button type="button" class="btn btn-outline-primary btn-light btn-block border-0 shadow-sm rounded-0" @click="submit">Post job</button>
                                     </div>
                                 </div>
                             </div>
@@ -456,55 +567,18 @@
     import customRadio from './CustomRadio.vue'
     import questionInput from './QuestionInputComponent.vue'
     import clientInput from './ClientSkillInput.vue'
-
-    class UploadFile {
-        constructor(file) {
-            this.name = file.name;
-            this.display = file.display;
-            this.progress = file.progress;
-            this.size = file.size;
-            this.file = file;
-        };
-
-        processFile(storage) {
-            let result = '';
-            let reader = new FileReader();
-            let vm = this;
-            reader.onloadstart = () => {
-                this.display = true;
-            };
-
-            reader.onprogress = function(event) {
-                let percent = (event.loaded / event.total) * 100;
-                vm.progress = Math.round(percent);
-            };
-            reader.onloadend = () => {
-                this.file = reader.result;
-                storage.push(this.file);
-                // storage['file-' + count] = this.file;
-                this.display = false;
-            };
-            reader.readAsDataURL(this.file);
-        };
-
-        getSize() {
-            let kb = this.size / 1000;
-            return Math.floor(kb);
-        }
-    }
+    import dropFile from './DropFile.vue'
 
     export default {
-        components: {
-            customRadio,
-            questionInput,
-            clientInput,
-        },
+        props: ['draftId'],
+
+        components: { customRadio, questionInput, clientInput, dropFile },
 
         data() {
             return {
                 // general pages field
                 pages: [
-                    {id: 1, disable: true, fields: ['title', 'service'], completed: false},
+                    {id: 1, disable: true, fields: ['title', 'service', 'category'], completed: false},
                     {id: 2, disable: true, fields: ['description'], completed: false},
                     {id: 3, disable: true, fields: ['job_type'], completed: false},
                     {id: 4, disable: true, fields: [], completed: false},
@@ -512,7 +586,7 @@
                     {id: 6, disable: true, fields: [], completed: false},
                 ],
 
-                step: 5,
+                step: 1,
                 show: false,
 
                 // questions
@@ -529,14 +603,8 @@
                 displayQustionInput: false,
                 questionCounter: 0,
 
-                // file upload
-                files: [],
-                fileCount: 0,
-                fileUploadError: false,
-
                 // classes
-                validDrop: 'drop-card',
-                invalidDrop: 'drop-card-error',
+
                 textMuted: 'text-muted',
                 textDanger: 'text-danger',
                 classActive: 'border-primary text-primary shadow-sm font-weight-bold',
@@ -548,7 +616,7 @@
 
                 // services & skills
                 service: {id: '', title: ''},
-                services: [],
+                services: null,
                 subService: {id: '', category: ''},
                 subservices: [],
                 subserviceDisplay: false,
@@ -557,28 +625,14 @@
                 userProvidedSkills: [],
                 // clientAddedSkills: '',
 
-                // form: new Form({
-                //     title: '',
-                //     service: '',
-                //     category: '',
-                //     description: '',
-                //     job_type: 'One-time project',
-                //     question_1: null,
-                //     question_2: null,
-                //     question_3: null,
-                //     question_4: null,
-                //     question_5: null,
-                //     skills: '',
-                //     client_added_skills: '',
-                //     experience_level: 'Entry',
-                //     expected_duration: 'Less than 1 month',
-                //     job_post_completed: '',
-                //     files: []
-                // }),
+                // Update
+                updateMode: false,
+
                 form: new Form({
-                    title: 'Bla',
-                    service: '',
-                    category: '',
+                    id: '',
+                    title: '',
+                    service: {},
+                    category: {},
                     description: '',
                     job_type: 'One-time project',
                     question_1: null,
@@ -590,20 +644,38 @@
                     client_added_skills: '',
                     experience_level: 'Entry',
                     expected_duration: 'Less than 1 month',
-                    job_post_completed: '',
-                    files: []
+                    job_post_completed: 0,
+                    files: [],
+                    current_page: '',
                 })
             }
         },
 
         methods: {
+            cancelUpdate() {
+                this.updateMode = false;
+                this.step = 5;
+            },
+
+            updateJob() {
+                this.form.patch('/api/updatejob/up'+ (this.step + 1))
+                    .then(response => {
+
+                    })
+                    .catch()
+            },
+
+            editJob(step) {
+                this.updateMode = true;
+                this.step = step - 1;
+            },
+
             addUserSkill(skills) {
                 this.form.client_added_skills = skills;
             },
 
             selectCurrent(skill) {
                 if (!skill.state) {
-                    console.log(skill);
                     this.selectedSkills.push(skill.category);
                     skill.state = true;
                     this.form.skills = this.selectedSkills.join(', ');
@@ -650,43 +722,7 @@
                 }
             },
 
-            deleteFile(e){
-                this.files.splice(e, 1);
-                this.form.files.splice(e, 1);
-                this.fileCount--;
-                this.fileUploadError = false;
-            },
 
-            drop(e) {
-                for (var i = 0; i < e.dataTransfer.items.length; i++) {
-                    if (e.dataTransfer.items[i].kind === 'file' && this.fileCount <= 3) {
-                        this.fileUploadError = false;
-                        let file = e.dataTransfer.items[i].getAsFile();
-                        file.display = false;
-                        file.progress = 0;
-
-                        this.readAndStore(file);
-                    } else {
-                        this.fileUploadError = true;
-                    }
-                }
-            },
-
-            readAndStore(file) {
-                this.fileCount++;
-                if (this.fileCount <= 3) {
-                    let loadedFile = new UploadFile(file)
-
-                    this.files.push(loadedFile);
-
-                    loadedFile.processFile(this.form.files);
-
-                    this.validate();
-                } else {
-                    this.fileCount--;
-                    this.fileUploadError = true;
-                }
-            },
 
             prev() {
                 this.step--;
@@ -702,11 +738,16 @@
             },
 
             next() {
+                this.form.current_page = this.step + 1;
+
                 this.form.post('/api/jobs/s' + (this.step + 1))
                     .then(respond => {
                         const status = respond.data.status;
 
                         if (status === 200) {
+
+                            this.form.id = respond.data.draftId;
+
                             this.step++;
                             this.pages.forEach(page => {
                                 if (page.id !== this.step) {
@@ -731,8 +772,12 @@
 
             validate(data = this.pages[this.step]) {
                 let validation = data.fields.every(field => {
+                    if (field === 'service' || field === 'category') {
+                        return ! _.isEmpty(this.form[field]);
+                    }
                     return  this.form[field].length > 0;
                 });
+
                 if (validation) {
                     this.pages[this.step].completed = true;
                 } else {
@@ -741,7 +786,8 @@
             },
 
             onServiceSelected() {
-                this.form.service = this.service.title;
+                Object.assign(this.form.service, this.service)
+                // this.form.service.title = this.service.title;
 
                 axios.get('/api/elancer/services/' + this.service.id)
                     .then(respond => {
@@ -751,61 +797,109 @@
             },
 
             onSubServiceSelected() {
-                // axios.get('/api/elancer/subservices/1')
+                Object.assign(this.form.category, this.subService);
+                // this.form.category = this.subService.category;
+
                 axios.get('/api/elancer/services/' + this.subService.id)
                     .then(respond => {
                         let results = respond.data;
                         results.forEach(res => {
                             Vue.set(res, 'state', false)
                         });
-                        console.log(results);
 
                         this.skills = respond.data;
-                    })
+                    });
             },
 
-            onSubmit(e) {
-                // this.form.post('/api/elancer/create')
-                //     .then(respond => {
-                //         const status = respond.data.status;
+            submit() {
+                this.form.job_post_completed = true;
 
-                //         if (status === 200) {
-                //             window.location = respond.data.redirect;
-                //         }
-                //     })
+                this.form.post('/api/jobs/' + this.form.id)
+                    .then(respond => {
+                        const status = respond.data.status;
 
-            }
+                        if (status === 200) {
+
+                            window.location = respond.data.redirect;
+                        }
+                    })
+
+            },
+
+            initiateForm() {
+                axios.get('/api/elancer/create')
+                    .then(respond => {
+                        // console.log(respond.data);
+                        this.services = respond.data;
+                    })
+                    .catch()
+            },
+
+            // Draft methods
+            loadDraft(data) {
+                data.service = JSON.parse(data.service);
+                data.category = JSON.parse(data.category);
+
+                for (let key in data) {
+                    if (key in this.form) {
+
+                        if (key === 'service') {
+                            this.service.id = data.service.id;
+                            this.service.title = data.service.title;
+
+                            this.onServiceSelected();
+                        } else if (key === 'category') {
+
+                            this.subService.id = data.category.id;
+                            this.subService.category = data.category.category;
+
+                            this.onSubServiceSelected();
+                            this.validate();
+                        }
+
+                        this.form[key] = data[key];
+                    } else {
+                    }
+                }
+            },
         },
 
         created() {
-            // this.onSubServiceSelected();
+            Event.$on('Files Ready', files => {
+                console.log(`Length of uploaded: ${files.length}`);
+                // console.log('Promises');
+            });
+
             this.validate();
 
-            axios.get('/api/elancer/create')
-                .then(respond => {
-                    this.services = respond.data;
-                })
+            if (this.draftId === 0) {
+
+                this.initiateForm();
+            } else {
+                this.initiateForm();
+
+                axios.get('/api/draft/' + this.draftId)
+                    .then(response => {
+                        this.loadDraft(response.data);
+                    })
+                    .catch()
+            }
         }
 }
 </script>
 
-<style>
+<style scoped>
     .job-edit-btn:hover {
         box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.4) !important;
     }
+
+
     .custom-btn:focus {box-shadow: none;}
     .cIcon {width: 2rem; text-align: left;}
 
     .deleteFile:hover {cursor: pointer;}
 
-    .drop-card {
-        border: 2px dashed #15be61;
-    }
-    .drop-card-error {
-        border: 2px dashed red;
-    }
 
-    .customDropLink { cursor: pointer; }
 
     .rBox {
 	    background: green;
